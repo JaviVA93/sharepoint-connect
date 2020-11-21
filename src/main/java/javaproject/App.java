@@ -14,12 +14,15 @@ import org.apache.http.ParseException;
 import org.apache.http.client.*;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpPost;
+import org.apache.http.client.protocol.HttpClientContext;
 import org.apache.http.entity.ContentType;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.BasicCookieStore;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.impl.cookie.BasicClientCookie;
+import org.apache.http.protocol.BasicHttpContext;
+import org.apache.http.protocol.HttpContext;
 import org.apache.http.util.EntityUtils;
 import org.xml.sax.InputSource;
 import org.w3c.dom.Document;
@@ -126,17 +129,19 @@ public class App {
         }
     }
 
-    public static String getDigest(ArrayList<String> access_cookies) {
+    public static String getDigest(ArrayList<String> access_cookies) throws ClientProtocolException, IOException {
         CloseableHttpClient httpclient = HttpClients.createDefault();
-        CookieStore cookies_store = new BasicCookieStore();
+        CookieStore cookie_store = new BasicCookieStore();
         for (String cookie : access_cookies) {
             String[] splitted_cookie = cookie.split("=", 2);
             System.out.print("\n\nCookie name: " + splitted_cookie[0]);
             System.out.print("\nCookie value: " + splitted_cookie[1]);
         }
-        //BasicClientCookie rtFa = new BasicClientCookie("test", value)
-        //HttpPost httppost = new HttpPost(digest_url);
-        //httppost.setEntity(request_body);
+        BasicClientCookie rtFa = new BasicClientCookie("test", "test");
+        HttpContext localContext = new BasicHttpContext();
+        HttpPost httppost = new HttpPost(digest_url);
+        localContext.setAttribute(HttpClientContext.COOKIE_STORE, cookie_store);
+        httpclient.execute(httppost, localContext);
         return "";
     }
 }
