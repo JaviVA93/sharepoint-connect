@@ -33,18 +33,20 @@ import org.w3c.dom.Document;
  */
 public class App {
     public static String digest_url = "https://gruposifu.sharepoint.com/_api/contextinfo";
+    public static String kpmg_sharepoint_url = "gruposifu.sharepoint.com";
 
     public static void main(String[] args) {
         try {
             String request_security_token_body = requestSecurityToken();
             if (request_security_token_body != "") {
                 String security_token_value;
-                security_token_value = getSecurityTokenFromXML(request_security_token_body);
+                security_token_value = getVariableValueFromXML(request_security_token_body, "wsse:BinarySecurityToken");
                 if (security_token_value != "") {
                     System.out.print("\n\nSECURITY TOKEN\n" + security_token_value);
                     ArrayList<String> access_token_cookies = requestAccessTokenCookies(security_token_value);
                     if (access_token_cookies.size() == 2) {
                         String digest_value = getDigest(access_token_cookies);
+                        System.out.println("\n\nDigest value: " + digest_value);
                     } else {
                         System.out.print("\n\nERROR GETTING THE ACCESS COOKIES");
                     }
@@ -87,7 +89,7 @@ public class App {
         return "";
     }
 
-    public static String getSecurityTokenFromXML(String xml_data) {
+    public static String getVariableValueFromXML(String xml_data, String element_name) {
         try {
             DocumentBuilder builder;
             builder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
@@ -96,7 +98,7 @@ public class App {
 
             Document doc;
             doc = builder.parse(src);
-            String s_token = doc.getElementsByTagName("wsse:BinarySecurityToken").item(0).getTextContent();
+            String s_token = doc.getElementsByTagName(element_name).item(0).getTextContent();
 
             return s_token;
         } catch (Exception e) {
@@ -136,12 +138,21 @@ public class App {
             String[] splitted_cookie = cookie.split("=", 2);
             System.out.print("\n\nCookie name: " + splitted_cookie[0]);
             System.out.print("\nCookie value: " + splitted_cookie[1]);
+            BasicClientCookie client_cookie = new BasicClientCookie(splitted_cookie[0], splitted_cookie[1]);
+            client_cookie.setDomain(kpmg_sharepoint_url);
+            client_cookie.setPath("/");
+            cookie_store.addCookie(client_cookie);
         }
-        BasicClientCookie rtFa = new BasicClientCookie("test", "test");
-        HttpContext localContext = new BasicHttpContext();
+        HttpContext local_context = new BasicHttpContext();
         HttpPost httppost = new HttpPost(digest_url);
-        localContext.setAttribute(HttpClientContext.COOKIE_STORE, cookie_store);
-        httpclient.execute(httppost, localContext);
+        local_context.setAttribute(HttpClientContext.COOKIE_STORE, cookie_store);
+        CloseableHttpResponse response = httpclient.execute(httppost, local_context);
+        HttpEntity entity = response.getEntity();
+            if (entity != null) {
+                String result = EntityUtils.toString(entity);
+                String digest_value = getVariableValueFromXML(result, "d:FormDigestValue");
+                return digest_value;
+            }
         return "";
     }
 }
