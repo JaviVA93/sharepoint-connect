@@ -32,8 +32,8 @@ import org.w3c.dom.Document;
  *
  */
 public class App {
-    public static String digest_url = "https://gruposifu.sharepoint.com/_api/contextinfo";
-    public static String kpmg_sharepoint_url = "gruposifu.sharepoint.com";
+    public static String digest_url = "https://client.sharepoint.com/_api/contextinfo"; //Fill with client data
+    public static String client_sharepoint_url = "client.sharepoint.com"; //Fill with client data
 
     public static void main(String[] args) {
         try {
@@ -61,9 +61,9 @@ public class App {
 
     public static String requestSecurityToken() throws ClientProtocolException, IOException {
 
-        String user_email = "kpmg@quercus.com.es";
-        String user_pass = "#gQUSEg2045Y+i";
-        String endpoint_url = "https://gruposifu.sharepoint.com/sites/test/gestioncomercial/";
+        String user_email = "clientemail@test.com"; //Fill with client data
+        String user_pass = "1234ABC"; //Fill with client data
+        String endpoint_url = "https://client.sharepoint.com/sites/test/"; //Fill with client data
         String xml_data = "<s:Envelope xmlns:s=\"http://www.w3.org/2003/05/soap-envelope\"\r\n      xmlns:a=\"http://www.w3.org/2005/08/addressing\"\r\n      xmlns:u=\"http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-utility-1.0.xsd\">\r\n    <s:Header>\r\n        <a:Action s:mustUnderstand=\"1\">http://schemas.xmlsoap.org/ws/2005/02/trust/RST/Issue</a:Action>\r\n        <a:ReplyTo>\r\n            <a:Address>http://www.w3.org/2005/08/addressing/anonymous</a:Address>\r\n        </a:ReplyTo>\r\n        <a:To s:mustUnderstand=\"1\">https://login.microsoftonline.com/extSTS.srf</a:To>\r\n        <o:Security s:mustUnderstand=\"1\"\r\n       xmlns:o=\"http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-secext-1.0.xsd\">\r\n            <o:UsernameToken>\r\n                <o:Username>"
                 + user_email + "</o:Username>\r\n                <o:Password>" + user_pass
                 + "</o:Password>\r\n            </o:UsernameToken>\r\n        </o:Security>\r\n    </s:Header>\r\n    <s:Body>\r\n        <t:RequestSecurityToken xmlns:t=\"http://schemas.xmlsoap.org/ws/2005/02/trust\">\r\n            <wsp:AppliesTo xmlns:wsp=\"http://schemas.xmlsoap.org/ws/2004/09/policy\">\r\n                <a:EndpointReference>\r\n                    <a:Address>"
@@ -110,7 +110,7 @@ public class App {
             throws ParseException, IOException {
 
         CloseableHttpClient httpclient = HttpClients.createDefault();
-        HttpPost httppost = new HttpPost("https://gruposifu.sharepoint.com/_forms/default.aspx?wa=wsignin1.0");
+        HttpPost httppost = new HttpPost("https://client.sharepoint.com/_forms/default.aspx?wa=wsignin1.0"); //Fill with client data
         StringEntity request_body = new StringEntity(security_token,
                 ContentType.create("application/x-www-form-urlencoded"));
         httppost.setEntity(request_body);
@@ -138,8 +138,9 @@ public class App {
             String[] splitted_cookie = cookie.split("=", 2);
             System.out.print("\n\nCookie name: " + splitted_cookie[0]);
             System.out.print("\nCookie value: " + splitted_cookie[1]);
+            
             BasicClientCookie client_cookie = new BasicClientCookie(splitted_cookie[0], splitted_cookie[1]);
-            client_cookie.setDomain(kpmg_sharepoint_url);
+            client_cookie.setDomain(client_sharepoint_url);
             client_cookie.setPath("/");
             cookie_store.addCookie(client_cookie);
         }
